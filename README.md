@@ -1,6 +1,6 @@
 # Angular Material Scrollable Tabs and Swipe Guestures
 
-This project implements current Material Design Tab features such as Scrollable Tabs and swiping within the content area to switch tabs which are not included in Angular Material. Big thanks to [Igor Kurkov](https://stackoverflow.com/users/9026103/igor-kurkov) for his initial work on the scrollable tabs feauture.
+This project implements current Material Design Tab features such as Scrollable Tabs and swiping within the content area to switch tabs which are not included in Angular Material. Big thanks to [Igor Kurkov](https://github.com/IgorKurkov) for his initial work on the [scrollable tabs feauture](https://stackoverflow.com/a/62031767/27316320).
 
 This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 17.3.3.
 
