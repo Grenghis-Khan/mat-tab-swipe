@@ -46,27 +46,22 @@ export class MatTabScrollToCenterDirective implements OnDestroy {
     this.matTabGroup.selectedIndex = 0;
     this.storedIndex = this.matTabGroup.selectedIndex;
     this.subs.add(
-      fromEvent<MouseEvent>(this.element.nativeElement, 'click').subscribe(
-        (clickedContainer: MouseEvent) => {
-          // console.log('click: ', clickedContainer);
-          console.log('fromEvent click');
+      fromEvent<PointerEvent>(this.element.nativeElement, 'click').subscribe(
+        (clickedContainer: PointerEvent) => {
           this.startEvent(clickedContainer);
         }
       )
     );
-    // this.subs.add(
-    //   fromEvent<TouchEvent>(this.element.nativeElement, 'touchend').subscribe(
-    //     (clickedContainer: TouchEvent) => {
-    //       // clickedContainer.preventDefault();
-    //       console.log('fromEvent touch');
-    //       this.startEvent(clickedContainer);
-    //     }
-    //   )
-    // );
+    this.subs.add(
+      fromEvent<PointerEvent>(this.element.nativeElement, 'touchend').subscribe(
+        (clickedContainer: PointerEvent) => {
+          this.startEvent(clickedContainer);
+        }
+      )
+    );
   }
 
   ngAfterViewInit() {
-    // console.log(this.element);
     const matTabLabel = this.element.nativeElement.querySelector(
       '.mat-mdc-tab-labels'
     );
@@ -135,7 +130,6 @@ export class MatTabScrollToCenterDirective implements OnDestroy {
   }
 
   swipeStart($event: MouseEvent | TouchEvent) {
-    console.log('swipeStart');
     if ($event instanceof MouseEvent) {
       this.mouseStartTime = new Date().getTime();
       this.touchstartX = $event.x;
@@ -146,7 +140,6 @@ export class MatTabScrollToCenterDirective implements OnDestroy {
   }
 
   swipeFinish($event: MouseEvent | TouchEvent) {
-    console.log('swipreFinish');
     let newTime: number;
     if ($event instanceof MouseEvent) {
       newTime = new Date().getTime();
@@ -160,17 +153,15 @@ export class MatTabScrollToCenterDirective implements OnDestroy {
     } else {
       this.touchendX = $event.changedTouches[0].screenX;
     }
-    this.checkDirection($event);
+    this.checkDirection();
     this.swipeEnd = true;
   }
 
   //swipe left/right detection for moving tabs
   //added "+ n" so that small guestures don't activate
-  checkDirection($event: MouseEvent | TouchEvent) {
-    // console.log('selectedIndex', this.matTabGroup.selectedIndex);
-    // console.log('storedIndex', this.storedIndex);
+  checkDirection() {
     if (this.touchendX + 10 < this.touchstartX && !this.swipeEnd) {
-      console.log('swiped left');
+      // console.log('swiped left');
 
       if (this.storedIndex < this.tabsArrLength - 1) {
         const isLast = this.matTabGroup.selectedIndex === this.tabsArrLength;
@@ -181,7 +172,7 @@ export class MatTabScrollToCenterDirective implements OnDestroy {
       }
     }
     if (this.touchendX > this.touchstartX + 10 && !this.swipeEnd) {
-      console.log('swiped right');
+      // console.log('swiped right');
 
       if (this.storedIndex > 0) {
         const isFirst = this.storedIndex === 0; /* starter point as 0 */
@@ -189,14 +180,10 @@ export class MatTabScrollToCenterDirective implements OnDestroy {
         this.matTabGroup.selectedIndex = isFirst ? 0 : this.storedIndex;
       }
     }
-    // console.log('updated storedIndex', this.storedIndex);
-    if ($event instanceof TouchEvent) {
-      this.startEvent($event);
-    }
   }
 
-  startEvent(clickedContainer: MouseEvent | TouchEvent) {
-    console.log('startEvent: ', clickedContainer);
+  startEvent(clickedContainer: PointerEvent) {
+    let changeScroll = false;
     const scrolledButton: DOMRectI = (
       clickedContainer.target as HTMLElement
     ).getBoundingClientRect();
@@ -215,24 +202,23 @@ export class MatTabScrollToCenterDirective implements OnDestroy {
     //touch drag of the tab bar is jumpy due to touch events also init 'click' events
     //so prevent double "clicks"
     //If clicking/touching the tab bar else if clicking/touching tab body calcs
-    // if (
-    //   scrolledButton.bottom <= containerHeight &&
-    //   clickedContainer instanceof PointerEvent
-    // ) {
-    if (scrolledButton.bottom <= containerHeight) {
-      console.log('scrollTo via header');
+    if (
+      scrolledButton.bottom <= containerHeight &&
+      clickedContainer instanceof PointerEvent
+    ) {
+      // console.log('scrollTo via header');
       const leftXOffset = (window.innerWidth - scrolledButton.width) / 2;
       const currentVisibleViewportLeft = scrolledButton.left;
       const neededLeftOffset = currentVisibleViewportLeft - leftXOffset;
       newPositionScrollTo = scrollContainer.scrollLeft + neededLeftOffset;
-      // console.log('scrollto: ', newPositionScrollTo);
+      changeScroll = true;
     } else if (scrolledButton.bottom > containerHeight) {
-      console.log('scrollTo via body');
+      // console.log('scrollTo via div body');
       newPositionScrollTo =
         this.tabWidths * this.storedIndex +
         scrollContainer.offsetLeft -
         (window.innerWidth - this.tabWidths) / 2;
-      // console.log('scrollto: ', newPositionScrollTo);
+      changeScroll = true;
     }
 
     //needed because this.matTabGroup.selectedIndex is null when tab 0 is selected
@@ -246,12 +232,12 @@ export class MatTabScrollToCenterDirective implements OnDestroy {
       this.storedIndex = 0;
     }
 
-    // console.log('new storedIndex: ', this.storedIndex);
-
-    scrollContainer.scroll({
-      left: newPositionScrollTo,
-      behavior: 'smooth',
-    });
+    if (changeScroll) {
+      scrollContainer.scroll({
+        left: newPositionScrollTo,
+        behavior: 'smooth',
+      });
+    }
   }
 
   ngOnDestroy() {

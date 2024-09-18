@@ -1,6 +1,16 @@
-# Angular Material Scrollable Tabs and Swipe Guestures
+# Angular Material - Scrollable Tabs and Swipe Guestures
 
 This project implements current Material Design Tab features such as Scrollable Tabs and swiping within the content area to switch tabs which are not included in Angular Material. Big thanks to [Igor Kurkov](https://github.com/IgorKurkov) for his initial work on the [scrollable tabs feauture](https://stackoverflow.com/a/62031767/27316320).
+
+All the code that is needed for the features is located in the [scrolling.directive.ts](https://github.com/Grenghis-Khan/mat-tab-swipe/blob/main/src/app/tabs/scrolling.directive.ts).
+In the template add the directive to a mat-tab-group as so `<mat-tab-group [scrollToCenter]="selectedIndex">` and in the class define `selectedIndex!: number;`
+
+The default scrolling for mat-tab-groups also needs to be overridden which is done in the [styles.scss`](https://github.com/Grenghis-Khan/mat-tab-swipe/blob/main/src/styles.scss).
+
+Finally to get `Element.scroll()` to function on iOS and IE we need the npm packages
+`npm i element-scroll-polyfill` and `npm i smoothscroll-polyfill` which are imported into the [polyfills.ts](https://github.com/Grenghis-Khan/mat-tab-swipe/blob/main/src/polyfills.ts) file.
+
+## Angular Info
 
 This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 17.3.3.
 
