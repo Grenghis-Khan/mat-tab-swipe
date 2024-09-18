@@ -1,0 +1,19 @@
+<mat-tab-group [scrollToCenter]="selectedIndex">
+  <ng-container *ngFor="let tab of tabs; let i = index">
+    <mat-tab id="{{ 'tab' + tab.id.toString() }}" [label]="tab.label">
+      <div
+        class="disable-text-selection"
+        style="
+          height: 300px;
+          display: flex;
+          flex-direction: column;
+          justify-content: center;
+          align-items: center;
+        "
+      >
+        {{ tabContent[i] }}
+        <button style="margin: 12px" (click)="pushed()">Push Me</button>
+      </div>
+    </mat-tab>
+  </ng-container>
+</mat-tab-group>
