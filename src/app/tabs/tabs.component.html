@@ -1,19 +1,59 @@
-<mat-tab-group [scrollToCenter]="selectedIndex">
-  <ng-container *ngFor="let tab of tabs; let i = index">
-    <mat-tab id="{{ 'tab' + tab.id.toString() }}" [label]="tab.label">
-      <div
-        class="disable-text-selection"
-        style="
-          height: 300px;
-          display: flex;
-          flex-direction: column;
-          justify-content: center;
-          align-items: center;
-        "
-      >
-        {{ tabContent[i] }}
-        <button style="margin: 12px" (click)="pushed()">Push Me</button>
-      </div>
-    </mat-tab>
-  </ng-container>
-</mat-tab-group>
+<!-- <div
+  style="
+    width: 100%;
+    height: 100%;
+    display: flex;
+    margin: 0 16px 0 16px;
+    justify-content: center;
+    align-items: center;
+  "
+>
+  <div
+    style="
+      border: 1px;
+      border-style: solid;
+      border-radius: 10px;
+      border-color: whitesmoke;
+      box-shadow: 1px 1px 5px 2px rgb(216, 216, 216);
+      max-width: 350px;
+      max-height: 500px;
+      margin: 12px;
+      padding: 8px;
+    "
+  > -->
+<div style="margin: 24px 16px 24px 16px">
+  <mat-card
+    style="
+      max-width: 816px;
+      min-height: calc(100vh - 9.375rem);
+      margin: auto;
+      padding: 8px;
+      position: static;
+    "
+  >
+    <mat-tab-group
+      [scrollToCenter]="mySelectedIndex"
+      [(selectedIndex)]="mySelectedIndex"
+    >
+      <ng-container *ngFor="let tab of tabs; let i = index">
+        <mat-tab id="{{ 'tab' + tab.id.toString() }}" [label]="tab.label">
+          <div
+            class="disable-text-selection"
+            style="
+              height: 75vh;
+              display: flex;
+              flex-direction: column;
+              justify-content: center;
+              align-items: center;
+            "
+          >
+            {{ tabContent[i] }}
+            <button style="margin: 12px" (click)="nextTab()">Next Tab</button>
+          </div>
+        </mat-tab>
+      </ng-container>
+    </mat-tab-group>
+  </mat-card>
+</div>
+<!-- </div>
+</div> -->

@@ -75,7 +75,7 @@ mat-tab-group {
           @include media-query-for-mobile {
             justify-content: unset !important;
           }
-          .mat-mdc-tab-label {
+          .mat-mdc-tab {
             // min-width: 20% !important;
             padding: 1.25% !important;
             margin: 0px !important;
