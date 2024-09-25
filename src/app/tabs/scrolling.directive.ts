@@ -46,20 +46,6 @@ export class MatTabScrollToCenterDirective implements OnDestroy {
   ) {
     // console.log(element);
     this.matTabGroup.selectedIndex = this.scrollToCenter;
-    // this.subs.add(
-    //   fromEvent<PointerEvent>(this.element.nativeElement, 'click').subscribe(
-    //     (clickedContainer: PointerEvent) => {
-    //       this.startEvent(clickedContainer);
-    //     }
-    //   )
-    // );
-    // this.subs.add(
-    //   fromEvent<PointerEvent>(this.element.nativeElement, 'touchend').subscribe(
-    //     (clickedContainer: PointerEvent) => {
-    //       this.startEvent(clickedContainer);
-    //     }
-    //   )
-    // );
     this.subs.add(
       fromEvent<MouseEvent>(this.element.nativeElement, 'click').subscribe(
         (clickedContainer: MouseEvent) => {
@@ -178,9 +164,11 @@ export class MatTabScrollToCenterDirective implements OnDestroy {
       this.touchEndX = $event.changedTouches[0].screenX;
       this.touchEndY = $event.changedTouches[0].screenY;
     }
+    //prevent vertical scrolling from activating horizontal swipe
     if (
       $event instanceof MouseEvent ||
-      ($event instanceof TouchEvent && this.touchEndY < this.touchStartY + 15)
+      ($event instanceof TouchEvent &&
+        Math.abs(this.touchEndY - this.touchStartY) < 50)
     ) {
       this.checkDirection();
     }
@@ -189,9 +177,10 @@ export class MatTabScrollToCenterDirective implements OnDestroy {
   }
 
   //swipe left/right detection for moving tabs
-  //added "+ n" so that small guestures don't activate
+  //added "+ swipeThreshold" so that small guestures don't activate
   checkDirection() {
-    if (this.touchEndX + 50 < this.touchStartX && !this.swipeEnd) {
+    const swipeThreshold = 50;
+    if (this.touchEndX + swipeThreshold < this.touchStartX && !this.swipeEnd) {
       // console.log('swiped left');
 
       if (this.scrollToCenter < this.tabsArrLength - 1) {
@@ -202,7 +191,7 @@ export class MatTabScrollToCenterDirective implements OnDestroy {
           : this.scrollToCenter;
       }
     }
-    if (this.touchEndX > this.touchStartX + 10 && !this.swipeEnd) {
+    if (this.touchEndX > this.touchStartX + swipeThreshold && !this.swipeEnd) {
       // console.log('swiped right');
 
       if (this.scrollToCenter > 0) {
@@ -213,7 +202,6 @@ export class MatTabScrollToCenterDirective implements OnDestroy {
     }
   }
 
-  // startEvent(clickedContainer: PointerEvent) {
   startEvent(clickedContainer: MouseEvent | TouchEvent) {
     let changeScroll = false;
     const scrolledButton: DOMRectI = (
@@ -223,69 +211,19 @@ export class MatTabScrollToCenterDirective implements OnDestroy {
     const scrollContainer =
       this.element.nativeElement.querySelector('.mat-mdc-tab-list');
 
-    const tabHeader = this.element.nativeElement.querySelector(
-      '.mat-mdc-tab-header'
-    );
-
-    const containerHeight = tabHeader.offsetHeight + tabHeader.offsetTop;
-
     let newPositionScrollTo: number = 0;
 
-    //touch drag of the tab bar is jumpy due to touch events also init 'click' events
-    //so prevent double "clicks"
-    //If clicking/touching the tab bar else if clicking/touching tab body calcs
     const target = clickedContainer.target as HTMLElement;
-    const targetClassList = target.offsetParent?.classList[0];
-    const targetParentClassList =
+    const targetParentClass = target.offsetParent?.classList[0];
+    const targetGrandparentClass =
       target.offsetParent?.parentElement?.offsetParent?.classList[0];
-    console.log('targetClassList: ', targetClassList);
-    console.log('targetParentClassList: ', targetParentClassList);
-    // if (
-    //   scrolledButton.bottom <= containerHeight &&
-    //   clickedContainer instanceof PointerEvent
-    // ) {
-    console.log('this.tabWidths: ', this.tabWidths);
-    console.log('tabsArrLength: ', this.tabsArrLength);
-    // if (
-    //   (targetClassList === 'mat-mdc-tab-list' ||
-    //     targetParentClassList === 'mat-mdc-tab-list' ||
-    //     targetClassList === 'mat-ripple' ||
-    //     targetClassList === 'mat-mdc-tab-header' ||
-    //     (targetParentClassList === 'mat-typography' &&
-    //       targetClassList != 'mat-mdc-tab-body')) &&
-    //   clickedContainer.type === 'click'
-    // ) {
-    //   // console.log('scrollTo via header');
-    //   const leftXOffset = (window.innerWidth - scrolledButton.width) / 2;
-    //   const currentVisibleViewportLeft = scrolledButton.left;
-    //   const neededLeftOffset = currentVisibleViewportLeft - leftXOffset;
-    //   newPositionScrollTo = scrollContainer.scrollLeft + neededLeftOffset;
-    //   changeScroll = true;
-    // } //on lazy load (matTabContent) scolledButton values === 0 in tab body on touchend
-    // // else if (
-    // //   scrolledButton.bottom > containerHeight ||
-    // //   scrolledButton.bottom === 0
-    // // ) {
-    // else if (
-    //   targetClassList?.includes('mat-mdc-tab-body') ||
-    //   targetParentClassList?.includes('mat-mdc-tab-body') ||
-    //   (targetClassList === undefined && targetParentClassList === undefined)
-    // ) {
-    //   // console.log('scrollTo via tab body');
-    //   newPositionScrollTo =
-    //     this.tabWidths * this.scrollToCenter +
-    //     this.tabContentDiv.offsetLeft +
-    //     scrollContainer.offsetLeft -
-    //     (window.innerWidth - this.tabWidths) / 2;
-    //   changeScroll = true;
-    // }
 
-    //on lazy load (matTabContent) scolledButton values === 0 in tab body on touchend
-
+    // if clicking/touching in tab body else if clicked in tab header calcs
+    //Classes are undefined on swipe events
     if (
-      targetClassList?.includes('mat-mdc-tab-body') ||
-      targetParentClassList?.includes('mat-mdc-tab-body') ||
-      (targetClassList === undefined && targetParentClassList === undefined)
+      targetParentClass?.includes('mat-mdc-tab-body') ||
+      targetGrandparentClass?.includes('mat-mdc-tab-body') ||
+      (targetParentClass === undefined && targetGrandparentClass === undefined)
     ) {
       // console.log('scrollTo via tab body');
       newPositionScrollTo =
@@ -294,7 +232,10 @@ export class MatTabScrollToCenterDirective implements OnDestroy {
         scrollContainer.offsetLeft -
         (window.innerWidth - this.tabWidths) / 2;
       changeScroll = true;
-    } else if (clickedContainer.type === 'click') {
+    }
+    //touch drag of the tab bar/header is jumpy due to touch events also initiating 'click' events
+    //so prevents double "clicks" in tab header
+    else if (clickedContainer.type === 'click') {
       // console.log('scrollTo via header');
       const leftXOffset = (window.innerWidth - scrolledButton.width) / 2;
       const currentVisibleViewportLeft = scrolledButton.left;
@@ -304,7 +245,7 @@ export class MatTabScrollToCenterDirective implements OnDestroy {
     }
 
     if (changeScroll) {
-      console.log(newPositionScrollTo);
+      // console.log(newPositionScrollTo);
       scrollContainer.scroll({
         left: newPositionScrollTo,
         behavior: 'smooth',
